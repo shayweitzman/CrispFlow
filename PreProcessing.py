@@ -3,17 +3,39 @@ import pandas as pd
 from tkinter import messagebox as mb
 import math
 import Discretization
+import entropy_based_binning as ebb
+
+"""
+Authors:
+Shay Weitzman - 315618918
+Yinon Hadad- 315451542
+Dolev Peretz - 208901504
+
+"""
 
 discreteFeatures = {}
 numericFeatures = {}
 
 def cleanData(TrainFile, TestFile, StructFile, fillEmptyMethod, normalizationVal, discretizationMethod, binsSpinBox):
+    """
+    :param TrainFile: the path to the train file
+    :param TestFile: the path to the test file
+    :param StructFile: the path to the Struct file
+    :param fillEmptyMethod: the chosen way to fill empty values
+    :param normalizationVal: the chosen normalization
+    :param discretizationMethod: the chosen discretization method
+    :param binsSpinBox: the bins number
+    :return: True if the cleaning file successfully created else return false
+    """
     global discreteFeatures
     global numericFeatures
     files = {'train': pd.read_csv(TrainFile), 'test': pd.read_csv(TestFile)}
 
-    """creating the clean files"""
+   # create dictionary for all the columns and their unique values for categorical cols and 'NUMERIC' for numeric features.
     for key in files:
+        if files[key].empty:
+            mb.showerror("Error", "One of the files is empty")
+            return False
         try:  # open all the files
             with open(StructFile, "r") as f:
                 discreteFeatures = {}
@@ -24,9 +46,13 @@ def cleanData(TrainFile, TestFile, StructFile, fillEmptyMethod, normalizationVal
         except:  # problem with the files
             mb.showerror("Error", "There is problem with the files")
             return False
+        for i in discreteFeatures:
+            for j in range(len(discreteFeatures[i])):
+                if discreteFeatures[i][j] != 'NUMERIC':
+                    discreteFeatures[i][j] = discreteFeatures[i][j].lower()
 
         numericFeatures = {}
-        # Create numeric features' dict
+        # Create numeric features' dict.
         for key1 in discreteFeatures:
             if discreteFeatures[key1] == ['NUMERIC']:
                 numericFeatures[key1] = discreteFeatures[key1]
@@ -68,12 +94,34 @@ def cleanData(TrainFile, TestFile, StructFile, fillEmptyMethod, normalizationVal
         if normalizationVal.get() == 1 and discretizationMethod.get() == 0: # enable normalization when discretization off.
             for col in numericFeatures:
                 files[key][col] = (files[key][col] - files[key][col].mean()) / files[key][col].std() # Z-Score Normalization
-    # Create bining
-    if discretizationMethod.get() != 0:
-        bins = Discretization.CreateBins(discretizationMethod, int(binsSpinBox.get()), numericFeatures, files['train'])
-        files['train'] = Discretization.applyBinsOnDF(files['train'], bins)
-        files['test'] = Discretization.applyBinsOnDF(files['test'], bins)
+    # Create bins
 
+    # 0 < discretizationMethod < 4 ==> our implementations
+    if 0 < discretizationMethod.get() < 4:
+        Discretization.ourCreateBins(discretizationMethod.get(), int(binsSpinBox.get()), numericFeatures, files['train'])
+
+    # 4 <= discretizationMethod < 6 ==> builtin implementations
+    elif 4 <= discretizationMethod.get() < 6:
+        Discretization.CreateBins(discretizationMethod.get(), int(binsSpinBox.get()), numericFeatures, files['train'])
+    try:
+        # builtin entropy-based discretization.
+        if discretizationMethod.get() == 6:
+            for i in numericFeatures:
+                files['train'][i] = ebb.bin_array(files['train'][i], nbins=int(binsSpinBox.get()), axis=0)
+                files['test'][i] = ebb.bin_array(files['test'][i], nbins=int(binsSpinBox.get()), axis=0)
+                numericFeatures[i] = [i for i in range(int(binsSpinBox.get()))]
+            files['train'].to_csv('train_clean.csv', sep=',', index=False)
+            files['test'].to_csv('test_clean.csv', sep=',', index=False)
+            return True
+    except:
+        mb.showerror("Error", "Entropy based bining failed")
+        return False
+
+    # change all dataframe values according the bins.
+    if discretizationMethod.get() != 0:
+        files['train'] = Discretization.applyBinsOnDF(files['train'], numericFeatures)
+        files['test'] = Discretization.applyBinsOnDF(files['test'], numericFeatures)
+    # create cleaned files after fill NaNs , and binnings.
     try:
         files['train'].to_csv('train_clean.csv', sep=',', index=False)
         files['test'].to_csv('test_clean.csv', sep=',', index=False)
@@ -81,45 +129,3 @@ def cleanData(TrainFile, TestFile, StructFile, fillEmptyMethod, normalizationVal
         mb.showerror("Error", "Close the clean files and try again")
         return False
     return True
-
-# def creareFeatureBining(discretizationVal,numOfBining, nomericFeature, df):
-#     # Equal width
-#     if discretizationVal.get() == 1:
-#         for i in nomericFeature:
-#             space = (df[i].max()-df[i].min())//numOfBining
-#             space = max(1, space)
-#             result = []
-#             for j in range(numOfBining):
-#                 result += [(df[i].min()) + space*j]
-#                 nomericFeature[i] = result
-#     elif discretizationVal.get() == 2:
-#     # Equal frequency
-#         space = len(df) // numOfBining
-#         df1 = df.copy()
-#         for i in nomericFeature:
-#             df1.sort_values(by=[i], inplace=True)
-#             df1.reset_index(drop=True, inplace=True)
-#             nomericFeature[i] = [df1[i][j] for j in range(0, len(df1), space)]
-#
-#     for key in nomericFeature:
-#         nomericFeature[key][0] = -math.inf
-#         nomericFeature[key].append(math.inf)
-#     for key in nomericFeature:
-#         bins = []
-#         for i in range(len(nomericFeature[key][:-1])):
-#             bins.append((nomericFeature[key][i]+1, nomericFeature[key][i + 1]))
-#         nomericFeature[key] = bins
-#     print(nomericFeature)
-#     return nomericFeature
-#
-# def changeN(x, node):
-#     x = round(x)
-#     for i in range(len(node)):
-#         if node[i][0] <= x <= node[i][1]:
-#             return i
-#     return -1
-#
-# def createBinDataFrame(df, nomericFeature):
-#     for i in nomericFeature:
-#         df[i] = df[i].apply(lambda x: changeN(x, nomericFeature[i]))
-#     return df
