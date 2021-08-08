@@ -1,7 +1,7 @@
 # Data Mining Algorithms
 Crisp Methodology Data Mining tool, EDA, Pre-Processing, Create and Evaluate Model using pandas, numpy, sklearn, matplotlib & Tkinter for GUI.
 
-## Description- 
+## Description
 
 This tool takes train & test csv files and starts Crisp Methodology flow.
 
