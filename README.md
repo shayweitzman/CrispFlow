@@ -1,5 +1,5 @@
 # Data Mining Algorithms
-Crisp Methodology Data Mining tool, EDA, Pre-Processing, Create and Evaluate Model.
+Crisp Methodology Data Mining tool, EDA, Pre-Processing, Create and Evaluate Model using pandas, numpy, sklearn, matplotlib & Tkinter for GUI.
 
 ## Description- 
 
