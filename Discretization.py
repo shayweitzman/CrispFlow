@@ -189,9 +189,11 @@ def CreateBins(discretizationMethod, numOfBining, numericFeatures, df):
     :param df: the data frame.
     """
     df1 = df.copy()
+    # Implemented Equal Width
     if discretizationMethod == 4:
         for i in numericFeatures:
             df1[i], numericFeatures[i] = pd.cut(x=df1[i], bins=numOfBining, retbins=True)
+    # Implemented Equal Length
     elif discretizationMethod == 5:
         for i in numericFeatures:
             df1[i], numericFeatures[i] = pd.qcut(df[i], q=numOfBining, duplicates='drop', retbins=True)

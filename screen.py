@@ -220,7 +220,7 @@ def algorithmCall():  # Evaluate the model.
     elif algorithmVal.get() == 1:
         results = naiveBase.builtinNaiveBase(PreProcessing.discreteFeatures)
     elif algorithmVal.get() == 2:
-        choseTrashHold('Minimum rows to continue tree building?', 'Max tree depth?', range(10, 101, 10), range(10, 31), 100, 20, 2)
+        choseTrashHold('Minimum rows to continue tree building?', 'Max tree depth?', range(10, 101, 10), range(1, 31), 100, 20, 2)
         results = DecisionTree.ourDecisionTree(PreProcessing.numericFeatures, PreProcessing.discreteFeatures, firstQ, secondQ, window)
     elif algorithmVal.get() == 3:
         choseTrashHold('Minimum rows to continue tree building?', 'Max tree depth?', range(10, 101, 10), range(10, 31), 100, 20, 2)
@@ -298,7 +298,7 @@ tkinter.Radiobutton(tab2, text="No", variable=normalizationVal, value=0).grid(co
 
 """ discretization needed?"""
 
-tkinter.Label(tab2, text='\nDiscretization Type', font=('Helvetica', 9, 'bold')).grid(column=0, row=0, sticky='w')
+#tkinter.Label(tab2, text='\nDiscretization Type', font=('Helvetica', 9, 'bold')).grid(column=0, row=0, sticky='w')
 
 tkinter.Label(tab2, text='\nBins Number:', font=('Helvetica', 9, 'bold')).grid(column=2, row=10, sticky='w')  # number of bins
 binsSpinBox = tkinter.Spinbox(tab2, from_=1, to=50, state="disabled")
@@ -320,11 +320,12 @@ tkinter.Label(tab2, text=' ').grid(column=2, row=12, sticky='w')
 tkinter.Button(tab2, text="Next", font=('calibre', 13, 'bold'), command=lambda: nextTab(1), padx=25, pady=10).grid(column=2, row=13, sticky='e')
 tkinter.Button(tab2, text="Back", font=('calibre', 13, 'bold'), padx=25, pady=10, command=lambda: backTab(1)).grid(column=0, row=13, sticky='w')
 
+
 ################################# Tab 3 ################################################
 
 tab3 = ttk.Frame(tab_control)
 tab_control.add(tab3, text='Algorithms')
-#tab_control.tab(2, state="disabled")
+tab_control.tab(2, state="disabled")
 
 tkinter.Label(tab3, text="\t         ", font=('Helvetica', 9, 'bold'), padx=20, pady=10).grid(column=0, row=0)
 tkinter.Label(tab3, text="\t         ", font=('Helvetica', 9, 'bold'), padx=20, pady=10).grid(column=2, row=0)
